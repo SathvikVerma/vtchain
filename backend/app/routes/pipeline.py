@@ -52,14 +52,22 @@ async def run_pipeline(req: RunPipelineRequest) -> TransactionRecord:
     # domain (settings.ans_root_domain) — e.g. buyer.vtchain.xyz — which is
     # what makes "domain-anchored identity" a real claim instead of a fake
     # placeholder like buyer.vtchain.dev.
+    #
+    # For a spoof demo, we use a FRESH, never-registered id scoped to this one
+    # request rather than mutating the shared buyer_id's registry entry. The
+    # ANS mock registry is one shared object across all in-flight requests —
+    # unregistering the real buyer_id here would also wipe out any OTHER
+    # concurrent request (e.g. a teammate clicking Run at the same time) that
+    # is mid-negotiation and expects that buyer to still be verified later.
     root = settings.ans_root_domain
+    buyer_id = f"spoofed-{uuid.uuid4().hex[:8]}" if req.simulate_spoof else req.buyer_id
+    record.buyer_id = buyer_id
     if not req.simulate_spoof:
-        await ans_client.register(req.buyer_id, AgentRole.buyer, f"buyer.{root}")
+        await ans_client.register(buyer_id, AgentRole.buyer, f"buyer.{root}")
     await ans_client.register(req.seller_id, AgentRole.seller, f"seller.{root}")
-    await ans_client.register(req.auditor_id, AgentRole.auditor, f"auditor.{root}")
 
     # --- Step 2: verify buyer + seller before any negotiation happens ---
-    record.buyer_verification = await ans_client.verify(req.buyer_id, AgentRole.buyer)
+    record.buyer_verification = await ans_client.verify(buyer_id, AgentRole.buyer)
     record.seller_verification = await ans_client.verify(req.seller_id, AgentRole.seller)
     await save_transaction(record)
 
@@ -72,7 +80,7 @@ async def run_pipeline(req: RunPipelineRequest) -> TransactionRecord:
     record.status = "negotiating"
     await save_transaction(record)
 
-    buyer = BuyerProfile(req.buyer_id, req.item, req.quantity_needed, req.max_unit_price)
+    buyer = BuyerProfile(buyer_id, req.item, req.quantity_needed, req.max_unit_price)
     seller = SellerProfile(req.seller_id, req.item, req.quantity_available, req.min_unit_price, req.list_price)
     record.negotiation = await negotiate(buyer, seller)
     await save_transaction(record)
@@ -84,7 +92,7 @@ async def run_pipeline(req: RunPipelineRequest) -> TransactionRecord:
 
     # --- Step 4a: auditor re-verifies both parties' IDENTITY before settlement ---
     record.auditor_verification = await ans_client.verify(req.auditor_id, AgentRole.auditor)
-    recheck_buyer = await ans_client.verify(req.buyer_id, AgentRole.buyer)
+    recheck_buyer = await ans_client.verify(buyer_id, AgentRole.buyer)
     recheck_seller = await ans_client.verify(req.seller_id, AgentRole.seller)
     await save_transaction(record)
 

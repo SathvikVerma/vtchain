@@ -14,9 +14,10 @@ from google import genai
 
 from ..config import settings
 from ..models.schemas import AgentRole, NegotiationResult, Offer
+from ._gemini_retry import call_with_retry
 
 MAX_ROUNDS = 4
-MODEL_NAME = "gemini-2.0-flash"
+MODEL_NAME = "gemini-3.6-flash"
 
 _client = genai.Client(api_key=settings.gemini_api_key)
 
@@ -72,7 +73,9 @@ async def _ask_agent(role: AgentRole, item: str, constraints: str, history: list
         constraints=constraints,
         history=_format_history(history),
     )
-    response = await _client.aio.models.generate_content(model=MODEL_NAME, contents=prompt)
+    response = await call_with_retry(
+        _client.aio.models.generate_content, model=MODEL_NAME, contents=prompt
+    )
     text = response.text.strip()
     # Gemini sometimes wraps JSON in ```json fences despite instructions — strip them.
     if text.startswith("```"):

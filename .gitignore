@@ -3,6 +3,7 @@
 backend/.env
 backend/keys/
 *.pem
+ans-certs/
 
 # Python
 __pycache__/

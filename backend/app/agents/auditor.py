@@ -21,8 +21,9 @@ from google import genai
 
 from ..config import settings
 from ..models.schemas import AuditResult, NegotiationResult
+from ._gemini_retry import call_with_retry
 
-MODEL_NAME = "gemini-2.0-flash"
+MODEL_NAME = "gemini-3.6-flash"
 
 _client = genai.Client(api_key=settings.gemini_api_key)
 
@@ -87,7 +88,9 @@ async def audit(
     )
 
     try:
-        response = await _client.aio.models.generate_content(model=MODEL_NAME, contents=prompt)
+        response = await call_with_retry(
+            _client.aio.models.generate_content, model=MODEL_NAME, contents=prompt
+        )
         text = response.text.strip()
         if text.startswith("```"):
             text = text.strip("`").removeprefix("json").strip()
