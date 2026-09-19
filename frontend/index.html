@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VTChain — Verified Agentic Supply Chain</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --panel: #131722;
+    --border: #232838;
+    --text: #e6e9f0;
+    --muted: #8b93a7;
+    --accent: #6ee7b7;
+    --warn: #f5a524;
+    --danger: #f87171;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 2rem 1.5rem 4rem;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 1.4rem; margin-bottom: 0.25rem; }
+  .subtitle { color: var(--muted); margin-bottom: 2rem; font-size: 0.95rem; }
+
+  .controls {
+    display: flex; gap: 0.75rem; margin-bottom: 2rem; flex-wrap: wrap;
+  }
+  button {
+    background: var(--accent); color: #0b0e14; border: none;
+    padding: 0.7rem 1.3rem; border-radius: 8px; font-weight: 600;
+    cursor: pointer; font-size: 0.95rem;
+  }
+  button.secondary {
+    background: transparent; color: var(--danger); border: 1px solid var(--danger);
+  }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .step {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.1rem 1.3rem; margin-bottom: 0.9rem;
+    opacity: 0.35; transition: opacity 0.3s ease;
+  }
+  .step.active { opacity: 1; border-color: var(--accent); }
+  .step.halted { opacity: 1; border-color: var(--danger); }
+  .step-title { font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+  .badge {
+    font-size: 0.72rem; padding: 0.15rem 0.5rem; border-radius: 999px;
+    background: var(--border); color: var(--muted);
+  }
+  .badge.ok { background: rgba(110,231,183,0.15); color: var(--accent); }
+  .badge.fail { background: rgba(248,113,113,0.15); color: var(--danger); }
+  .step-body { margin-top: 0.5rem; font-size: 0.88rem; color: var(--muted); line-height: 1.5; }
+  .offer-line { color: var(--text); margin: 0.15rem 0; }
+  a.explorer-link {
+    display: inline-block; margin-top: 0.5rem; color: var(--accent);
+    font-weight: 600; text-decoration: none;
+  }
+  a.explorer-link:hover { text-decoration: underline; }
+
+  .options {
+    display: flex; gap: 0.6rem; margin-bottom: 1rem; align-items: center;
+    font-size: 0.85rem; color: var(--muted);
+  }
+  .options label { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>VTChain</h1>
+  <div class="subtitle">Verified Agentic Supply Chain — identity-gated, Gemini-negotiated, Solana-settled</div>
+
+  <div class="options">
+    <label><input type="checkbox" id="spoofToggle" /> Simulate spoofed buyer identity (demo the ANS halt)</label>
+  </div>
+
+  <div class="controls">
+    <button id="runBtn">Run pipeline</button>
+  </div>
+
+  <div id="steps">
+    <div class="step" id="step-verify">
+      <div class="step-title">1. Identity verification <span class="badge" id="badge-verify">waiting</span></div>
+      <div class="step-body" id="body-verify">Buyer and seller agents verify via GoDaddy ANS before anything else happens.</div>
+    </div>
+    <div class="step" id="step-negotiate">
+      <div class="step-title">2. Negotiation <span class="badge" id="badge-negotiate">waiting</span></div>
+      <div class="step-body" id="body-negotiate">Gemini-powered buyer/seller agents negotiate price and quantity.</div>
+    </div>
+    <div class="step" id="step-audit">
+      <div class="step-title">3. Auditor review <span class="badge" id="badge-audit">waiting</span></div>
+      <div class="step-body" id="body-audit">A third agent re-confirms identity, then independently reviews the negotiated deal itself for anything that looks wrong.</div>
+    </div>
+    <div class="step" id="step-settle">
+      <div class="step-title">4. Settlement <span class="badge" id="badge-settle">waiting</span></div>
+      <div class="step-body" id="body-settle">On agreement, a real SOL transfer fires on Solana devnet.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = window.location.origin;
+
+const els = {
+  runBtn: document.getElementById('runBtn'),
+  spoofToggle: document.getElementById('spoofToggle'),
+};
+
+function setStep(name, status, bodyHtml) {
+  const stepEl = document.getElementById(`step-${name}`);
+  const badgeEl = document.getElementById(`badge-${name}`);
+  const bodyEl = document.getElementById(`body-${name}`);
+  stepEl.classList.add('active');
+  stepEl.classList.remove('halted');
+  badgeEl.textContent = status;
+  const okStatuses = ['verified', 'agreed', 'settled', 'approved'];
+  const failStatuses = ['failed', 'halted', 'rejected'];
+  badgeEl.className = 'badge' + (okStatuses.includes(status) ? ' ok' : failStatuses.includes(status) ? ' fail' : '');
+  if (failStatuses.includes(status)) stepEl.classList.add('halted');
+  if (bodyHtml) bodyEl.innerHTML = bodyHtml;
+}
+
+function resetSteps() {
+  ['verify', 'negotiate', 'audit', 'settle'].forEach(name => {
+    const stepEl = document.getElementById(`step-${name}`);
+    const badgeEl = document.getElementById(`badge-${name}`);
+    stepEl.classList.remove('active', 'halted');
+    badgeEl.textContent = 'waiting';
+    badgeEl.className = 'badge';
+  });
+}
+
+async function runPipeline() {
+  resetSteps();
+  els.runBtn.disabled = true;
+  els.runBtn.textContent = 'Running...';
+
+  const body = { simulate_spoof: els.spoofToggle.checked };
+
+  try {
+    const resp = await fetch(`${API_BASE}/pipeline/run`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const record = await resp.json();
+    render(record);
+  } catch (err) {
+    setStep('verify', 'failed', `<span style="color:var(--danger)">Request failed: ${err.message}. Is the backend running?</span>`);
+  } finally {
+    els.runBtn.disabled = false;
+    els.runBtn.textContent = 'Run pipeline';
+  }
+}
+
+function render(record) {
+  // Step 1: verification
+  const bv = record.buyer_verification, sv = record.seller_verification;
+  if (bv || sv) {
+    const ok = bv?.verified && sv?.verified;
+    setStep('verify', ok ? 'verified' : 'failed',
+      `Buyer (${record.buyer_id}): ${bv?.verified ? 'verified via ' + bv.ans_domain : 'FAILED — ' + (bv?.reason || 'unknown')}<br>` +
+      `Seller (${record.seller_id}): ${sv?.verified ? 'verified via ' + sv.ans_domain : 'FAILED — ' + (sv?.reason || 'unknown')}`
+    );
+    if (!ok) return; // halted here
+  }
+
+  // Step 2: negotiation
+  if (record.negotiation) {
+    const n = record.negotiation;
+    const rounds = n.rounds.map(o =>
+      `<div class="offer-line">Round ${o.round} [${o.from_role}]: $${o.unit_price}/unit × ${o.quantity} — "${o.message}"</div>`
+    ).join('');
+    setStep('negotiate', n.agreed ? 'agreed' : 'failed',
+      rounds + (n.agreed
+        ? `<div style="margin-top:0.5rem;color:var(--accent)">Agreed: $${n.final_unit_price}/unit × ${n.final_quantity} units</div>`
+        : `<div style="margin-top:0.5rem;color:var(--danger)">No deal: ${n.reason}</div>`)
+    );
+    if (!n.agreed) return;
+  }
+
+  // Step 3: auditor — identity re-check, then independent deal review
+  if (record.auditor_verification) {
+    const av = record.auditor_verification;
+    if (!av.verified) {
+      setStep('audit', 'failed', `Identity re-check FAILED — ${av.reason}`);
+      return;
+    }
+    if (record.audit) {
+      const a = record.audit;
+      const flagsHtml = a.flags.length
+        ? `<div style="margin-top:0.35rem;color:var(--warn)">Flags: ${a.flags.join(', ')}</div>` : '';
+      setStep('audit', a.approved ? 'approved' : 'rejected',
+        `Identity re-check: verified.<br>Deal review: "${a.reasoning}"` + flagsHtml
+      );
+      if (!a.approved) return;
+    } else {
+      setStep('audit', 'verified', `Identity re-check: verified. Deal review pending...`);
+    }
+  }
+
+  // Step 4: settlement
+  if (record.settlement) {
+    const s = record.settlement;
+    setStep('settle', s.success ? 'settled' : 'failed',
+      s.success
+        ? `${s.lamports_transferred} lamports transferred.<br><a class="explorer-link" href="${s.explorer_url}" target="_blank">View on Solana Explorer →</a>`
+        : `<span style="color:var(--danger)">Settlement failed: ${s.error}</span>`
+    );
+  }
+
+  if (record.status === 'halted' && !record.settlement) {
+    // halted before settlement was attempted — already reflected above
+  }
+}
+
+els.runBtn.addEventListener('click', runPipeline);
+</script>
+</body>
+</html>

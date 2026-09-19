@@ -1,0 +1,17 @@
+# Secrets — NEVER commit these. VTHacks requires a public repo.
+.env
+backend/.env
+backend/keys/
+*.pem
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Node (if frontend tooling gets added)
+node_modules/
+
+# OS
+.DS_Store

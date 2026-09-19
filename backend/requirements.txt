@@ -1,0 +1,14 @@
+# Versions pinned to what was actually installed + tested working in this
+# build (Sept 2026). solana-py's transaction-building API changes across
+# versions — if you must use different versions, see the note at the top
+# of app/solana_client/settlement.py before assuming code is broken.
+fastapi==0.141.1
+uvicorn[standard]==0.46.0
+pydantic==2.13.5
+pydantic-settings==2.14.0
+motor==3.7.1
+python-dotenv==1.0.1
+google-genai==2.24.0
+solana==0.40.3
+solders==0.29.0
+httpx==0.28.1
