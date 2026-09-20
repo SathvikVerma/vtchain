@@ -1,4 +1,4 @@
-# VTChain — Verified Agentic Supply Chain
+# Parley — Verified Agentic Supply Chain
 
 VTHacks 14 project. Three autonomous agents (Buyer, Seller, Auditor) verify each
 other's identity via GoDaddy ANS, negotiate terms via Gemini, and settle on
@@ -88,7 +88,7 @@ python -m app.solana_client.setup_wallets  # real devnet wallets + airdrop
   registering the domain doesn't automatically register an agent identity
   against it; you still need ANS API access separately to do that.
 - **Vultr credit code: `MAJORLEAUGEHACKING`** — apply at signup for free
-  cloud credits. Not currently required for VTChain's core build (no
+  cloud credits. Not currently required for Parley's core build (no
   external hosting needed for the demo — it runs locally against devnet),
   but useful if you want the deployed app reachable by a public URL for
   the judges to poke at, or if Solana devnet RPC calls need to run

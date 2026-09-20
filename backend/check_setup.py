@@ -23,7 +23,7 @@ def main() -> None:
 
     env = dotenv_values(ENV_PATH)
 
-    print("=== VTChain setup status ===\n")
+    print("=== Parley setup status ===\n")
 
     print("Gemini (negotiation + auditor):")
     gemini_key = env.get("GEMINI_API_KEY", "")

@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .routes.pipeline import router as pipeline_router
 
-app = FastAPI(title="VTChain — Verified Agentic Supply Chain")
+app = FastAPI(title="Parley — Verified Agentic Supply Chain")
 
 app.add_middleware(
     CORSMiddleware,

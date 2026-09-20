@@ -1,4 +1,4 @@
-# VTChain — 4-Minute Pitch Script
+# Parley — 4-Minute Pitch Script
 
 ## The hook (15 sec)
 "Supply chains lose billions a year to counterfeit sellers and fraudulent

@@ -1,4 +1,4 @@
-# VTChain — Demo Video Script
+# Parley — Demo Video Script
 
 Target length: **2:30–3:00** (Devpost/MLH videos typically cap around 3
 min — check VTHacks' exact submission rules, but this length is safe).
@@ -23,14 +23,14 @@ dead air.
 ## Shot list & script
 
 ### [0:00–0:15] Cold open — hook, no dashboard yet
-**Visual:** Face cam or a simple title card with "VTChain" — whichever
+**Visual:** Face cam or a simple title card with "Parley" — whichever
 your team is more comfortable with on camera.
 **Narration:**
 > "Supply chains lose billions of dollars a year to fraud — because most
 > B2B deals still trust a name on an invoice, not a verified identity.
 > We built a supply chain where AI agents can't even start negotiating
 > until they prove who they are — and every deal settles instantly, with
-> a receipt anyone can check. This is VTChain."
+> a receipt anyone can check. This is Parley."
 
 ### [0:15–0:35] The problem, fast
 **Visual:** Can stay on face cam, or cut to a simple slide with the two
@@ -92,7 +92,7 @@ itself, let the red/failed state speak for a beat.)
 ### [2:45–3:00] Close
 **Visual:** Back to face cam, or hold on the finished dashboard.
 **Narration:**
-> "VTChain: verified identity, real negotiation, provable settlement —
+> "Parley: verified identity, real negotiation, provable settlement —
 > commerce machines can actually trust. Thanks for watching."
 
 ## Editing notes

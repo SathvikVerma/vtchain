@@ -16,7 +16,7 @@ from ..config import settings
 from ..models.schemas import AgentRole, NegotiationResult, Offer
 from ._gemini_retry import call_with_retry
 
-MAX_ROUNDS = 4
+MAX_ROUNDS = 5
 MODEL_NAME = "gemini-3.6-flash"
 
 _client = genai.Client(api_key=settings.gemini_api_key)

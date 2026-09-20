@@ -30,7 +30,7 @@ halves at once, because in a real supply chain they're the same problem.
 
 ## What it does
 
-VTChain simulates a fraud-resistant, fully autonomous B2B transaction
+Parley simulates a fraud-resistant, fully autonomous B2B transaction
 between three AI agents — a Buyer, a Seller, and an independent Auditor —
 with no human in the loop from negotiation to settlement.
 
@@ -48,7 +48,7 @@ reasons independently, proposing and responding to offers in a capped,
 deterministic number of rounds so a deal is always reached or the
 negotiation cleanly fails — never stuck in limbo.
 
-**3. Independent audit.** This is the piece we think makes VTChain more
+**3. Independent audit.** This is the piece we think makes Parley more
 than "a chatbot with a wallet." Once Buyer and Seller agree, a third
 agent — one that had no part in the negotiation — steps in. It re-verifies
 both parties' identity, then goes further: it reviews the *negotiated deal
@@ -148,7 +148,7 @@ team: working with a real agent-identity protocol for the first time,
 getting multiple LLM agents to negotiate reliably, building on Solana,
 or anything else that was a real discovery this weekend.]
 
-## What's next for VTChain
+## What's next for Parley
 
 - Implementing the full ANS cryptographic verification chain — moving from
   "currently registered and active" to full zero-trust proof via mTLS and

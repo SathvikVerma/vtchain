@@ -33,7 +33,15 @@ def _extract_retry_delay(exc: Exception) -> float | None:
 
 def _is_rate_limit_error(exc: Exception) -> bool:
     text = str(exc)
-    return "429" in text or "RESOURCE_EXHAUSTED" in text
+    # 429/RESOURCE_EXHAUSTED = quota exceeded; 503/UNAVAILABLE = Gemini's
+    # servers are transiently overloaded ("high demand") — both are worth
+    # retrying with backoff, neither means our request itself was bad.
+    return (
+        "429" in text
+        or "RESOURCE_EXHAUSTED" in text
+        or "503" in text
+        or "UNAVAILABLE" in text
+    )
 
 
 async def call_with_retry(fn, *args, **kwargs):

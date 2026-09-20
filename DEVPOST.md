@@ -1,11 +1,11 @@
-# Devpost Submission Draft — VTChain
+# Devpost Submission Draft — Parley
 
 *Copy each section into the matching Devpost field. Fill in [bracketed] placeholders before submitting.*
 
 ---
 
 ## Project name
-VTChain
+Parley
 
 ## Elevator pitch (one line, ~120 chars)
 Verified AI agents that negotiate and settle real supply-chain deals — identity-gated, Gemini-powered, Solana-settled.
@@ -35,7 +35,7 @@ after the fact. So we built both halves as one working system.
 
 ## What it does
 
-VTChain simulates a fraud-resistant B2B supply chain transaction between
+Parley simulates a fraud-resistant B2B supply chain transaction between
 three autonomous AI agents — a Buyer, a Seller, and an independent Auditor
 — with no human in the loop:
 
@@ -124,7 +124,7 @@ current library versions.
 about building with agent identity systems, working with Gemini's
 structured output, or Solana's transaction model for the first time.]
 
-## What's next for VTChain
+## What's next for Parley
 
 - Full ANS cryptographic verification chain (mTLS + SCITT transparency log
   proofs), moving from "registered and active" to full zero-trust proof

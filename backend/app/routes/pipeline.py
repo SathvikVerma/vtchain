@@ -6,6 +6,7 @@ GET /transactions/{id} and show live progress.
 """
 from __future__ import annotations
 
+import random
 import uuid
 
 from fastapi import APIRouter, HTTPException
@@ -33,6 +34,7 @@ class RunPipelineRequest(BaseModel):
     min_unit_price: float = 2.00
     list_price: float = 2.80
     simulate_spoof: bool = False  # if true, buyer_id is NOT pre-registered with ANS
+    randomize: bool = True  # vary starting price AND quantities each run for demo variety
 
 
 @router.post("/pipeline/run")
@@ -47,24 +49,47 @@ async def run_pipeline(req: RunPipelineRequest) -> TransactionRecord:
     )
     await save_transaction(record)
 
+    # Randomize both price AND quantity each run so back-to-back demo runs
+    # don't all show the same "$2.80 -> $2.30, 500 units" numbers. Values
+    # stay internally consistent — list_price > min_unit_price, with a real
+    # gap for max_unit_price to land in, and quantity_needed comfortably
+    # under quantity_available — so the negotiation still makes sense and
+    # reliably converges within MAX_ROUNDS.
+    if req.randomize:
+        list_price = round(random.uniform(2.20, 4.00), 2)
+        min_unit_price = round(list_price - random.uniform(0.30, 0.90), 2)
+        max_unit_price = round(min_unit_price + random.uniform(0.05, 0.45), 2)
+
+        quantity_available = random.randint(300, 1200)
+        # buyer needs somewhere between 30% and 80% of what's available
+        quantity_needed = max(50, int(quantity_available * random.uniform(0.3, 0.8)))
+    else:
+        list_price = req.list_price
+        min_unit_price = req.min_unit_price
+        max_unit_price = req.max_unit_price
+        quantity_available = req.quantity_available
+        quantity_needed = req.quantity_needed
+
     # --- Step 1: register identities (skip buyer if we're demoing a spoof) ---
     # Each agent is anchored as a subdomain of our one real GoDaddy-registered
-    # domain (settings.ans_root_domain) — e.g. buyer.vtchain.xyz — which is
-    # what makes "domain-anchored identity" a real claim instead of a fake
-    # placeholder like buyer.vtchain.dev.
+    # domain (settings.ans_root_domain) — e.g. buyer.brownsugar.design —
+    # which is what makes "domain-anchored identity" a real claim instead of
+    # a fake placeholder.
     #
-    # For a spoof demo, we use a FRESH, never-registered id scoped to this one
-    # request rather than mutating the shared buyer_id's registry entry. The
-    # ANS mock registry is one shared object across all in-flight requests —
-    # unregistering the real buyer_id here would also wipe out any OTHER
-    # concurrent request (e.g. a teammate clicking Run at the same time) that
-    # is mid-negotiation and expects that buyer to still be verified later.
+    # For a spoof demo, we use a FRESH, never-registered id scoped to this
+    # one request rather than mutating the shared buyer_id's registry entry.
+    # The ANS mock registry is one shared object across all in-flight
+    # requests — unregistering the real buyer_id here would also wipe out
+    # any OTHER concurrent request (e.g. a teammate clicking Run at the same
+    # time) that is mid-negotiation and expects that buyer to still be
+    # verified later.
     root = settings.ans_root_domain
     buyer_id = f"spoofed-{uuid.uuid4().hex[:8]}" if req.simulate_spoof else req.buyer_id
     record.buyer_id = buyer_id
     if not req.simulate_spoof:
         await ans_client.register(buyer_id, AgentRole.buyer, f"buyer.{root}")
     await ans_client.register(req.seller_id, AgentRole.seller, f"seller.{root}")
+    await ans_client.register(req.auditor_id, AgentRole.auditor, f"auditor.{root}")
 
     # --- Step 2: verify buyer + seller before any negotiation happens ---
     record.buyer_verification = await ans_client.verify(buyer_id, AgentRole.buyer)
@@ -80,8 +105,8 @@ async def run_pipeline(req: RunPipelineRequest) -> TransactionRecord:
     record.status = "negotiating"
     await save_transaction(record)
 
-    buyer = BuyerProfile(buyer_id, req.item, req.quantity_needed, req.max_unit_price)
-    seller = SellerProfile(req.seller_id, req.item, req.quantity_available, req.min_unit_price, req.list_price)
+    buyer = BuyerProfile(buyer_id, req.item, quantity_needed, max_unit_price)
+    seller = SellerProfile(req.seller_id, req.item, quantity_available, min_unit_price, list_price)
     record.negotiation = await negotiate(buyer, seller)
     await save_transaction(record)
 
@@ -107,11 +132,11 @@ async def run_pipeline(req: RunPipelineRequest) -> TransactionRecord:
     # auditor a real third agent rather than a formality.
     record.audit = await audit(
         item=req.item,
-        max_price=req.max_unit_price,
-        qty_needed=req.quantity_needed,
-        min_price=req.min_unit_price,
-        list_price=req.list_price,
-        qty_available=req.quantity_available,
+        max_price=max_unit_price,
+        qty_needed=quantity_needed,
+        min_price=min_unit_price,
+        list_price=list_price,
+        qty_available=quantity_available,
         negotiation=record.negotiation,
     )
     await save_transaction(record)
