@@ -24,7 +24,7 @@ frontend/
   index.html         Live dashboard: verify -> negotiate -> settle
 ```
 
-## Team split (suggested)
+## Team Division 
 - **Person A — Solana**: `app/solana_client/` — devnet wallets, settlement transfer.
   Start here first; it's the biggest unknown.
 - **Person B — ANS + backend**: `app/ans/`, `app/routes/`, `app/models/`, Mongo logging.
